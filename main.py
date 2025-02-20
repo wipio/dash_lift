@@ -19,8 +19,9 @@ st.markdown(
 
 
 # Credenciais do Supabase
-url = "https://iwnrbylqsyvlthozydfq.supabase.co"  # Substitua pela sua URL
-key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bnJieWxxc3l2bHRob3p5ZGZxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNjA3NzU4NywiZXhwIjoyMDQxNjUzNTg3fQ.H6bCnk4BOwZgXMKBX8eEjmtCbpxdsWuWDDleH8oXApo"  # Substitua pela sua chave de API
+url = st.secrets["SUPABASE_URL"]
+key = st.secrets["SUPABASE_KEY"]
+
 
 # Definir credenciais fixas
 USERNAME = "admin"
