@@ -3,3 +3,4 @@ supabase==0.5.0
 pandas==1.5.3
 matplotlib==3.7.1
 seaborn==0.12.2
+supabase==0.5.0
