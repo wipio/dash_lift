@@ -7,8 +7,6 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Configurações do Streamlit
-.streamlit/
 
 # Logs e arquivos temporários
 logs/
