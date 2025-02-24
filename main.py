@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+st.set_page_config(layout="wide")
 
 st.markdown(
     """
@@ -22,10 +23,9 @@ st.markdown(
 url = st.secrets["SUPABASE_URL"]
 key = st.secrets["SUPABASE_KEY"]
 
-
 # Definir credenciais fixas
-USERNAME = "admin"
-PASSWORD = "1234"
+USERNAME = st.secrets["USERNAME"]
+PASSWORD = st.secrets["SENHA"]
 
 # Criar sessão para login
 if "logged_in" not in st.session_state:
@@ -68,14 +68,16 @@ else:
     if data:   
         df = pd.DataFrame(data)
         
-        st.title("📊 Dashboard de Contatos")
+        st.markdown("<h1 style='color: #BD93F9;'>📊 Dashboard de Contatos</h1>", unsafe_allow_html=True)
         
         df = pd.DataFrame(data)
         df['data_contato'] = pd.to_datetime(df["data_contato"], format='%d/%m/%Y')
-        df_sorted = df.sort_values(by='data_contato', ascending=False)
+        df = df.sort_values(by='data_contato', ascending=False)
         df['data_contato'] = df['data_contato'].dt.strftime('%d/%m/%Y')
-        st.title("Dashboard")
-        st.write("### Dados dos Alunos")
+        
+        st.markdown("<h3 style='color: #BD93F9;'>Dados dos alunos</h1>", unsafe_allow_html=True)
+
+        
         edited_df = st.data_editor(df, hide_index=True,
             num_rows="fixed", 
             key="table_editor", 
@@ -89,51 +91,147 @@ else:
 
         # 🔹 Gráfico 1: Distribuição de Cancelamentos (Pizza)
         with col1:
-            st.subheader("Cancelamentos")
+            
+            st.markdown("<h3 style='color: #BD93F9;'>Cancelamentos</h1>", unsafe_allow_html=True)
+                  
             cancel_counts = df["status_cancelamento"].value_counts()
-            fig1, ax1 = plt.subplots()
-            ax1.pie(cancel_counts, labels=["Ativo", "Cancelado"], autopct="%1.1f%%", colors=["green", "red"])
-            ax1.set_title("Distribuição de Cancelamentos")
+        
+            fig1, ax1 = plt.subplots(figsize=(12, 8), facecolor='#1E1E2E')
+
+            # Definindo as cores
+            cores = ['#5B2E91', '#A57BB5']  # Roxo escuro e roxo claro
+
+            # Configurar o gráfico
+            wedges, texts, autotexts = ax1.pie(
+                cancel_counts, 
+                labels=["Ativo", "Cancelado"], 
+                autopct='%1.1f%%', 
+                startangle=140,
+                colors=cores,  # Usando as cores personalizadas
+                wedgeprops={'edgecolor': '#44475A', 'linewidth': 2},
+                textprops={'fontsize': 12, 'color': '#F8F8F2'},
+                pctdistance=0.85
+            )
+
+            # Adicionar círculo central para transformar em gráfico de rosca
+            fig1.patch.set_alpha(0)
+
+            # Adicionar título e estilo visual
+            ax1.set_title('Distribuição de Cancelamentos', fontsize=18, fontweight='bold', pad=20, color='#BD93F9')
+
+            # Adicionar um rodapé
+            fig1.text(0.5, 0.02, 'Análise de Cancelamentos - 2024', ha='center', fontsize=12, color='#6272A4')
+
+            plt.tight_layout()
+
+            # Exibir o gráfico
             st.pyplot(fig1)
 
         # 🔹 Gráfico 2: Contatos ao Longo do Tempo (Linha)
         with col2:
-            st.subheader("Evolução de Contatos")
+            st.markdown("<h3 style='color: #BD93F9;'>Evolução de Contatos</h1>", unsafe_allow_html=True)
+            
             contatos_por_dia = df["data_contato"].value_counts().sort_index()
+
+            # Criando a figura e o gráfico
             fig2, ax2 = plt.subplots()
-            sns.lineplot(x=contatos_por_dia.index, y=contatos_por_dia.values, ax=ax2, marker="o")
-            ax2.set_title("Contatos por Data")
-            ax2.set_xlabel("Data")
-            ax2.set_ylabel("Número de Contatos")
+
+            # Criando o gráfico de linha
+            sns.lineplot(x=contatos_por_dia.index, y=contatos_por_dia.values, ax=ax2, marker="o", color='#5B2E91')
+
+            # Remover fundo
+            fig2.patch.set_facecolor('none')  # Remove o fundo da figura
+            ax2.patch.set_facecolor('none')   # Remove o fundo da área de plotagem
+
+            # Alterando cor das referências para roxo
+            ax2.set_title("Contatos por Data", color='#BD93F9')
+            ax2.set_xlabel("Data", color='#BD93F9')
+            ax2.set_ylabel("Número de Contatos", color='#BD93F9')
+            
+            # Modificando as bordas
+            ax2.spines['top'].set_visible(False)  # Remove a borda superior
+            ax2.spines['right'].set_visible(False)  # Remove a borda direita
+            ax2.spines['left'].set_linewidth(2)  # Aumenta a espessura da borda esquerda
+            ax2.spines['left'].set_color('#BD93F9')  # Cor da borda esquerda
+            ax2.spines['bottom'].set_linewidth(2)  # Aumenta a espessura da borda inferior
+            ax2.spines['bottom'].set_color('#BD93F9')  # Cor da borda inferior
+            
+            # Modificando as ticks (referências) dos eixos
+            ax2.tick_params(axis="x", rotation=45, labelcolor='#BD93F9', labelsize=10)
+            ax2.tick_params(axis="y", labelcolor='#BD93F9', labelsize=10)
+            
+            # Forçar o eixo Y para ser inteiros
+            ax2.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
+            
+            ax2.set_xticks(contatos_por_dia.index[::10])
+            
+
+            # Rotacionando as labels do eixo X
             ax2.tick_params(axis="x", rotation=45)
+
+            # Exibindo o gráfico no Streamlit
             st.pyplot(fig2)
 
-        # Criando segunda linha do layout
-        # col3, col4 = st.columns(2)
-
-        # # 🔹 Gráfico 3: Contatos por Aluno (Barras)
-        # with col3:
-        #     st.subheader("Contatos por Aluno")
-        #     contatos_por_aluno = df["aluno"].value_counts().head(10)  # Exibe apenas os 10 primeiros
-        #     fig3, ax3 = plt.subplots()
-        #     sns.barplot(x=contatos_por_aluno.values, y=contatos_por_aluno.index, ax=ax3, palette="viridis")
-        #     ax3.set_title("Top 10 Alunos Mais Contatados")
-        #     ax3.set_xlabel("Número de Contatos")
-        #     ax3.set_ylabel("Aluno")
-        #     st.pyplot(fig3)
-
         # # 🔹 Gráfico 4: Distribuição dos Prefixos Telefônicos (Histograma)
-        # with col4:
+        # Criando a coluna "prefixo"
         df_col4 = df
-        st.subheader("Prefixos de Contato")
-        df_col4["prefixo"] = df_col4["numero_contato"].astype(str).str[:4]
-        prefixo_counts = df_col4["prefixo"].value_counts()
+        st.markdown("<h3 style='color: #BD93F9;'>Prefixos de Contato</h1>", unsafe_allow_html=True)
+
+        # Criando a coluna "prefixo"
+        regioes = { '11': '(SP)', '12': '(SP)', '13': '(SP)', '14': '(SP)', '15': '(SP)', '16': '(SP)', '17': '(SP)', '18': '(SP)', '19': '(SP)', 
+            '21': '(RJ)', '22': '(RJ)', '24': '(RJ)', 
+            '31': '(MG)', '32': '(MG)', '33': '(MG)', '34': '(MG)', '35': '(MG)', '37': '(MG)', '38': '(MG)', 
+            '41': '(PR)', '42': '(PR)', '43': '(PR)', '44': '(PR)', '45': '(PR)', '46': '(PR)', 
+            '51': '(RS)', '53': '(RS)', '54': '(RS)', '55': '(RS)', 
+            '61': '(DF)', '62': '(GO)', '63': '(TO)', '64': '(GO)', '65': '(MT)', '66': '(MT)', '67': '(MS)', 
+            '71': '(BA)', '73': '(BA)', '74': '(BA)', '75': '(BA)', '77': '(BA)', 
+            '81': '(PE)', '82': '(AL)', '83': '(PB)', '84': '(RN)', '85': '(CE)', '86': '(PI)', '87': '(PE)', '88': '(CE)', 
+            '91': '(PA)', '92': '(AM)', '93': '(PA)', '94': '(PA)', '95': '(RR)', '96': '(AP)', '97': '(AM)', '98': '(MA)', '99': '(MA)' }
+
+
+
+        # Criando a coluna 'prefixo' com os primeiros 2 dígitos do número
+        df_col4["prefixo"] = df_col4["numero_contato"].astype(str).str[:2]
+
+        # Adicionando a coluna de 'região' com base no prefixo
+        df_col4["regiao"] = df_col4["prefixo"].map(regioes).fillna("Outros")
+
+        # Contagem das regiões
+        regiao_counts = df_col4["regiao"].value_counts()
+
+        # Criando a figura e o gráfico de barras
         fig4, ax4 = plt.subplots()
-        sns.barplot(x=prefixo_counts.index, y=prefixo_counts.values, ax=ax4, palette="coolwarm")
-        ax4.set_title("Distribuição dos Prefixos")
-        ax4.set_xlabel("Prefixo")
-        ax4.set_ylabel("Quantidade")
+
+        # Gráfico de barras com a paleta de cores "coolwarm"
+        sns.barplot(x=regiao_counts.index, y=regiao_counts.values, ax=ax4, palette="coolwarm")
+
+        # Removendo o fundo
+        fig4.patch.set_facecolor('none')  # Remove o fundo da figura
+        ax4.patch.set_facecolor('none')   # Remove o fundo da área de plotagem
+
+        # Alterando o título e as labels
+        ax4.set_title("Distribuição dos Prefixos por Região", color='#BD93F9')
+        ax4.set_xlabel("Região", color='#BD93F9', fontsize=12)
+        ax4.set_ylabel("Quantidade", color='#BD93F9', fontsize=12)
+
+        # Modificando as bordas
+        ax4.spines['top'].set_visible(False)  # Remove a borda superior
+        ax4.spines['right'].set_visible(False)  # Remove a borda direita
+        ax4.spines['left'].set_linewidth(2)  # Aumenta a espessura da borda esquerda
+        ax4.spines['left'].set_color('#BD93F9')  # Cor da borda esquerda
+        ax4.spines['bottom'].set_linewidth(2)  # Aumenta a espessura da borda inferior
+        ax4.spines['bottom'].set_color('#BD93F9')  # Cor da borda inferior
+
+        # Modificando as ticks (referências) dos eixos
+        ax4.tick_params(axis="x", rotation=45, labelcolor='#BD93F9', labelsize=10)
+        ax4.tick_params(axis="y", labelcolor='#BD93F9', labelsize=10)
+
+        # Forçar o eixo Y para ser inteiros
+        ax4.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
+
+        # Exibindo o gráfico no Streamlit
         st.pyplot(fig4)
-        
+
+
         
 
